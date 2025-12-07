@@ -5,9 +5,12 @@ require("dotenv").config();
 const app = express();
 
 /* =========================
-   ✅ FORCE CORS (RENDER SAFE)
+   ✅ FORCE CORS (RENDER + VERCEL)
    ========================= */
 app.use((req, res, next) => {
+  // Debug log so we can see in Render logs that this runs
+  console.log("CORS middleware:", req.method, req.path);
+
   res.header(
     "Access-Control-Allow-Origin",
     "https://bmsce-lost-and-found.vercel.app"
@@ -22,7 +25,6 @@ app.use((req, res, next) => {
   );
   res.header("Access-Control-Allow-Credentials", "true");
 
-  // ✅ Handle preflight requests
   if (req.method === "OPTIONS") {
     return res.sendStatus(200);
   }
@@ -31,13 +33,13 @@ app.use((req, res, next) => {
 });
 
 /* =====================
-   ✅ BODY PARSERS
+   BODY PARSERS
    ===================== */
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
 /* =====================
-   ✅ ROUTES
+   ROUTES
    ===================== */
 app.use("/auth", require("./routes/auth"));
 app.use("/items", require("./routes/items"));
@@ -45,16 +47,16 @@ app.use("/notifications", require("./routes/notifications"));
 app.use("/admin", require("./routes/admin"));
 
 /* =====================
-   ✅ DATABASE + SERVER
+   DB + SERVER
    ===================== */
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
     console.log("✅ MongoDB connected");
     const PORT = process.env.PORT || 5000;
-    app.listen(PORT, () =>
-      console.log(`✅ Server running on port ${PORT}`)
-    );
+    app.listen(PORT, () => {
+      console.log(`✅ Server running on port ${PORT}`);
+    });
   })
   .catch((err) => {
     console.error("❌ MongoDB connection error:", err);
