@@ -8,22 +8,26 @@ const app = express();
    ✅ FORCE CORS (RENDER + VERCEL)
    ========================= */
 app.use((req, res, next) => {
-  // Debug log so we can see in Render logs that this runs
-  console.log("CORS middleware:", req.method, req.path);
+  const origin = req.headers.origin;
 
-  res.header(
-    "Access-Control-Allow-Origin",
-    "https://bmsce-lost-and-found.vercel.app"
-  );
-  res.header(
+  // ✅ allow all vercel preview + prod domains
+  if (
+    origin &&
+    (origin.endsWith(".vercel.app") ||
+     origin === "http://localhost:5173")
+  ) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
+
+  res.setHeader(
     "Access-Control-Allow-Methods",
     "GET,POST,PUT,DELETE,OPTIONS"
   );
-  res.header(
+  res.setHeader(
     "Access-Control-Allow-Headers",
     "Content-Type, Authorization"
   );
-  res.header("Access-Control-Allow-Credentials", "true");
+  res.setHeader("Access-Control-Allow-Credentials", "true");
 
   if (req.method === "OPTIONS") {
     return res.sendStatus(200);
