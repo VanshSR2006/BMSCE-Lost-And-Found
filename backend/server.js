@@ -18,7 +18,15 @@ const app = express();
 /* =====================
    MIDDLEWARE
 ===================== */
-app.use(cors());
+const corsOptions = {
+  origin: [
+    "https://bmsce-lost-and-found.vercel.app", // ✅ frontend
+  ],
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
+
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
