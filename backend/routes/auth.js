@@ -5,13 +5,19 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const authMiddleware = require("../middleware/authMiddleware");
 
-// ---------------- SIGNUP ----------------
-router.post("/signup", async (req, res) => {
+/* ===================== SIGNUP / REGISTER ===================== */
+const registerHandler = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: "All fields required" });
+    }
+
     if (!email.endsWith("@bmsce.ac.in")) {
-      return res.status(400).json({ message: "Use your BMSCE email only" });
+      return res
+        .status(400)
+        .json({ message: "Use your BMSCE email only" });
     }
 
     const exists = await User.findOne({ email });
@@ -48,19 +54,26 @@ router.post("/signup", async (req, res) => {
     console.error("Signup error:", err);
     res.status(500).json({ message: "Signup failed" });
   }
-});
+};
 
-// ---------------- LOGIN ----------------
+/* ✅ BOTH ROUTES POINT TO SAME HANDLER */
+router.post("/signup", registerHandler);
+router.post("/register", registerHandler);
+
+/* ===================== LOGIN ===================== */
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ message: "Invalid credentials" });
+    if (!user) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
 
     const valid = await bcrypt.compare(password, user.password);
-    if (!valid)
+    if (!valid) {
       return res.status(400).json({ message: "Invalid credentials" });
+    }
 
     const token = jwt.sign(
       { id: user._id, role: user.role },
@@ -84,7 +97,7 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// ---------------- ME ----------------
+/* ===================== ME ===================== */
 router.get("/me", authMiddleware, async (req, res) => {
   const user = await User.findById(req.user.id).select("-password");
   res.json({ user });
